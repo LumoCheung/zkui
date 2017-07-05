@@ -100,7 +100,7 @@ public class Home extends HttpServlet {
             ServletUtil.INSTANCE.renderHtml(request, response, templateParam, "home.ftl.html");
 
         } catch (KeeperException | InterruptedException | TemplateException ex) {
-            logger.error(Arrays.toString(ex.getStackTrace()));
+            logger.error("",ex);
             ServletUtil.INSTANCE.renderError(request, response, ex.getMessage());
         }
 

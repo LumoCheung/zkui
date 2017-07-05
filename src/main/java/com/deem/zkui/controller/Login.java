@@ -96,11 +96,13 @@ public class Login extends HttpServlet {
                 }
             } else {
                 JSONArray jsonRoleSet = (JSONArray) ((JSONObject) new JSONParser().parse(globalProps.getProperty("userSet"))).get("users");
+                logger.debug(globalProps.getProperty("userSet"));
                 for (Iterator it = jsonRoleSet.iterator(); it.hasNext();) {
                     JSONObject jsonUser = (JSONObject) it.next();
                     if (jsonUser.get("username").equals(username) && jsonUser.get("password").equals(password)) {
                         authenticated = true;
                         role = (String) jsonUser.get("role");
+                        break;
                     }
                 }
             }

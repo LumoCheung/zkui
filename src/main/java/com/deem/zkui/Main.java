@@ -17,11 +17,11 @@
  */
 package com.deem.zkui;
 
-import com.deem.zkui.dao.Dao;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Date;
 import java.util.Properties;
+
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
@@ -39,26 +39,28 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.Configuration.ClassList;
 import org.eclipse.jetty.webapp.JettyWebXmlConfiguration;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Main {
 
-    private final static org.slf4j.Logger logger = LoggerFactory.getLogger(Main.class);
+    private final static Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
 
         logger.debug("Starting ZKUI!");
         Properties globalProps = new Properties();
-        File f = new File("config.cfg");
+        String path=Thread.currentThread().getContextClassLoader().getResource("config.cfg").getPath();
+        File f = new File(path);
         if (f.exists()) {
-            globalProps.load(new FileInputStream("config.cfg"));
+            globalProps.load(new FileInputStream(path));
         } else {
             System.out.println("Please create config.cfg properties file and then execute the program!");
             System.exit(1);
         }
 
         globalProps.setProperty("uptime", new Date().toString());
-        new Dao(globalProps).checkNCreate();
+//        new Dao(globalProps).checkNCreate();
 
         String webFolder = "webapp";
         Server server = new Server();

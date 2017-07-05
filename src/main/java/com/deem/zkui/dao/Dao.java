@@ -19,6 +19,8 @@ package com.deem.zkui.dao;
 
 import com.deem.zkui.domain.History;
 import com.googlecode.flyway.core.Flyway;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -35,17 +37,19 @@ public class Dao {
     public Dao(Properties globalProps) {
         this.globalProps = globalProps;
     }
-    
-    public void open() {
+
+	//TODO delete mysql config --2017-7-5
+    /*public void open() {
         Base.open(globalProps.getProperty("jdbcClass"), globalProps.getProperty("jdbcUrl"), globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd"));
     }
     
     public void close() {
         Base.close();
-    }
+    }*/
     
     public void checkNCreate() {
-        try {
+    	//TODO delete mysql config --2017-7-5
+        /*try {
             Flyway flyway = new Flyway();
             flyway.setDataSource(globalProps.getProperty("jdbcUrl"), globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd"));
             //Will wipe db each time. Avoid this in prod.
@@ -56,29 +60,36 @@ public class Dao {
             flyway.migrate();
         } catch (Exception ex) {
             logger.error("Error trying to migrate db! Not severe hence proceeding forward.");
-        }
+        }*/
         
     }
     
     public List<History> fetchHistoryRecords() {
-        this.open();
+    	//TODO delete mysql config --2017-7-5
+        /*this.open();
         List<History> history = History.findAll().orderBy("ID desc").limit(FETCH_LIMIT);
         history.size();
         this.close();
-        return history;
-        
+        return history;*/
+    	List<History> history = new ArrayList<History>();
+    	return history;
     }
     
     public List<History> fetchHistoryRecordsByNode(String historyNode) {
-        this.open();
+    	//TODO delete mysql config --2017-7-5
+        /*this.open();
         List<History> history = History.where("CHANGE_SUMMARY like ?", historyNode).orderBy("ID desc").limit(FETCH_LIMIT);
         history.size();
         this.close();
-        return history;
+        return history;*/        
+
+    	List<History> history = new ArrayList<History>();
+    	return history;
     }
     
     public void insertHistory(String user, String ipAddress, String summary) {
-        try {
+    	//TODO delete mysql config --2017-7-5
+        /*try {
             this.open();
             //To avoid errors due to truncation.
             if (summary.length() >= 500) {
@@ -94,6 +105,6 @@ public class Dao {
         } catch (Exception ex) {
             logger.error(Arrays.toString(ex.getStackTrace()));
         }
-        
+        */
     }
 }

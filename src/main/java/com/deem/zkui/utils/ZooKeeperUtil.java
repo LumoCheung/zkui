@@ -17,8 +17,6 @@
  */
 package com.deem.zkui.utils;
 
-import com.deem.zkui.vo.LeafBean;
-import com.deem.zkui.vo.ZKNode;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,12 +25,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.ZooKeeper.States;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
 import org.apache.zookeeper.data.Stat;
@@ -41,6 +43,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.LoggerFactory;
+
+import com.deem.zkui.vo.LeafBean;
+import com.deem.zkui.vo.ZKNode;
 
 public enum ZooKeeperUtil {
 
@@ -57,12 +62,15 @@ public enum ZooKeeperUtil {
 
     public ZooKeeper createZKConnection(String url, Integer zkSessionTimeout) throws IOException, InterruptedException {
         Integer connectAttempt = 0;
-        ZooKeeper zk = new ZooKeeper(url, zkSessionTimeout, new Watcher() {
+        /*ZooKeeper zk = new ZooKeeper(url, zkSessionTimeout, new Watcher() {
             @Override
             public void process(WatchedEvent event) {
                 logger.trace("Connecting to ZK.");
             }
-        });
+        });*/
+        CountDownLatch connectedLatch = new CountDownLatch(1);
+        ZooKeeper zk = new ZooKeeper(url, zkSessionTimeout, new ConnectedWatcher(connectedLatch));
+        waitUntilConnected(zk,connectedLatch);
         //Wait till connection is established.
         while (zk.getState() != ZooKeeper.States.CONNECTED) {
             Thread.sleep(30);
@@ -73,6 +81,32 @@ public enum ZooKeeperUtil {
         }
         return zk;
 
+    }
+    
+    public static void waitUntilConnected(ZooKeeper zooKeeper,CountDownLatch connectedLatch) {
+        if (States.CONNECTING == zooKeeper.getState()) {
+            try {
+                connectedLatch.await();
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+    }
+ 
+    static class ConnectedWatcher implements Watcher {
+ 
+        private CountDownLatch connectedLatch;
+ 
+        ConnectedWatcher(CountDownLatch connectedLatch) {
+            this.connectedLatch = connectedLatch;
+        }
+ 
+        @Override
+        public void process(WatchedEvent event) {
+            if (event.getState() == KeeperState.SyncConnected) {
+                connectedLatch.countDown();
+            }
+        }
     }
 
     private ArrayList<ACL> defaultAcl = ZooDefs.Ids.OPEN_ACL_UNSAFE;
